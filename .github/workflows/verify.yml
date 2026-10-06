@@ -1,0 +1,56 @@
+name: Windows and macOS end-to-end
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  jarvis:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-15, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    env:
+      JARVIS_DATA_DIR: ${{ github.workspace }}/.data
+      HF_HUB_DISABLE_SYMLINKS_WARNING: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install through Windows bootstrap (no preinstalled Python/Node used)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: '& .\scripts\bootstrap.ps1 setup --portable --model qwen3:0.6b'
+      - name: Install through macOS bootstrap (no preinstalled Python/Node used)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: bash scripts/bootstrap.sh setup --portable --model qwen3:0.6b
+      - name: Tests on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          & .\.venv\Scripts\python.exe -m pytest -q
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & .\scripts\bootstrap.ps1 launch --no-browser
+          & .\.venv\Scripts\python.exe -m scripts.smoke
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & .\scripts\bootstrap.ps1 launch --no-browser
+          & .\scripts\bootstrap.ps1 doctor
+      - name: Tests on macOS
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          .venv/bin/python -m pytest -q
+          bash scripts/bootstrap.sh launch --no-browser
+          .venv/bin/python -m scripts.smoke
+          bash scripts/bootstrap.sh launch --no-browser
+          bash scripts/bootstrap.sh doctor
+      - name: Stop owned processes on Windows
+        if: always() && runner.os == 'Windows'
+        shell: pwsh
+        run: '& .\scripts\bootstrap.ps1 stop'
+      - name: Stop owned processes on macOS
+        if: always() && runner.os == 'macOS'
+        shell: bash
+        run: bash scripts/bootstrap.sh stop

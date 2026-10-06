@@ -1,0 +1,8 @@
+[project]
+name = "jarvis-agent"
+version = "1.0.0"
+requires-python = ">=3.11,<3.13"
+dependencies = ["fastapi>=0.115,<1", "uvicorn>=0.34,<1", "httpx>=0.28,<1", "python-multipart>=0.0.20", "kokoro-onnx>=0.4.9,<1", "soundfile>=0.13,<1", "faster-whisper>=1.1,<2", "numpy>=2,<3", "sounddevice>=0.5,<1"]
+
+[dependency-groups]
+dev = ["pytest>=8,<10"]

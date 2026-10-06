@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.venv/
+.data/
+.cache/
+__pycache__/
+.pytest_cache/
+.env
+*.log
+.runtime/
+output/
+.DS_Store
+Thumbs.db
+*.local
+:memory:.ses
+*.ses
