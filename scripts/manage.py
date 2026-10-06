@@ -303,6 +303,9 @@ def launch(args):
             raise RuntimeError("Jarvis exited before becoming ready. Run doctor and inspect the backend log.")
         current = health()
         if current and current.get("instance") == instance and (args.skip_voice or (current["voice"]["tts"] and current["voice"]["stt"])):
+            # Windows venv's python.exe can be a redirector with a different PID
+            # from the interpreter serving HTTP. Record the proven instance's PID.
+            write_state({"backend": {"pid": current["pid"], "instance": instance}})
             print("Jarvis is ready at " + URL)
             if not args.no_browser:
                 webbrowser.open(URL)

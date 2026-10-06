@@ -33,9 +33,11 @@ jobs:
           & .\.venv\Scripts\python.exe -m pytest -q
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & .\scripts\bootstrap.ps1 launch --no-browser
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & .\.venv\Scripts\python.exe -m scripts.smoke
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & .\scripts\bootstrap.ps1 launch --no-browser
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & .\scripts\bootstrap.ps1 doctor
       - name: Tests on macOS
         if: runner.os == 'macOS'
