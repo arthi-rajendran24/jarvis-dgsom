@@ -89,12 +89,28 @@ def preflight():
     if WIN and sys.getwindowsversion().build < 19045:
         raise RuntimeError("Windows 10 22H2 or Windows 11 is required.")
     free = shutil.disk_usage(ROOT).free / 2**30
-    print(f"Platform: {key}. Available disk: {free:.1f} GB. Recommended RAM: 8 GB or more.")
+    ram = memory_gb()
+    print(f"Platform: {key}. RAM: {ram:.1f} GB. Available disk: {free:.1f} GB. Recommended RAM: 8 GB or more.")
+    if ram and ram < 4:
+        raise RuntimeError("This machine has less than 4 GB RAM. Use a machine with at least 4 GB (8 GB recommended) for the local voice/model stack.")
     # Repeated launches need less disk than a clean installation.
     minimum = .5 if PY.exists() and (ROOT / "dist/index.html").exists() else 6
     if free < minimum:
         raise RuntimeError(f"Free at least {minimum:g} GB before continuing (8 GB recommended for a fresh installation).")
     return key
+
+
+def memory_gb():
+    if WIN:
+        import ctypes
+        class MemoryStatus(ctypes.Structure):
+            _fields_ = [("length", ctypes.c_ulong), ("load", ctypes.c_ulong), *[(name, ctypes.c_ulonglong) for name in ("total_phys", "avail_phys", "total_page", "avail_page", "total_virtual", "avail_virtual", "avail_extended")]]
+        info = MemoryStatus()
+        info.length = ctypes.sizeof(info)
+        if not ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(info)):
+            raise RuntimeError("Windows could not report memory availability. Run doctor and check system health.")
+        return info.total_phys / 2**30
+    return int(subprocess.check_output(["sysctl", "-n", "hw.memsize"], text=True)) / 2**30
 
 
 def request(url, body=None, timeout=3):
