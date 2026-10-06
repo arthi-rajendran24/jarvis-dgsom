@@ -26,4 +26,5 @@ export UV_CACHE_DIR="$PWD/.cache/uv"
 export JARVIS_UV="$UV"
 export UV_PYTHON_PREFERENCE=only-managed
 "$UV" python install --no-bin --no-registry --install-dir "$UV_PYTHON_INSTALL_DIR" 3.11.14
-exec "$UV" run --no-project --python 3.11.14 scripts/manage.py "$@"
+BOOTSTRAP_PYTHON=$("$UV" python find --managed-python --system 3.11.14)
+exec "$BOOTSTRAP_PYTHON" scripts/manage.py "$@"

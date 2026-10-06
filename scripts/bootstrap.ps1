@@ -33,5 +33,7 @@ $env:JARVIS_UV = $uv
 $env:UV_PYTHON_PREFERENCE = 'only-managed'
 & $uv python install --no-bin --no-registry --install-dir $env:UV_PYTHON_INSTALL_DIR 3.11.14
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-& $uv run --no-project --python 3.11.14 scripts/manage.py @args
+$bootstrapPython = & $uv python find --managed-python --system 3.11.14
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+& $bootstrapPython scripts/manage.py @args
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
